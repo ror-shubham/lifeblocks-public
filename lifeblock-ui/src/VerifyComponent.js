@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import Web3 from "web3"
+import TextField from 'material-ui/TextField';
+import RaisedButton from 'material-ui/RaisedButton';
+import {Card} from 'material-ui/Card';
+
 
 var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"index","type":"uint256"}],"name":"getCertificate","outputs":[{"name":"certi_name","type":"bytes32"},{"name":"issuer_key","type":"address"},{"name":"issuedOn","type":"uint256"},{"name":"issuerDetails","type":"bytes32[4]"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"}]
+var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"type":"function"}]
 
-var BlockContractAddress = '0x960d22757b563ff7a986cffea8d6d10a1c3b8555';
+var BlockContractAddress = '0xb43833ad1d38ef2af76f07eabc4441296b87676a';
 var contract = new web3.eth.Contract(BlockContractABI,BlockContractAddress);
 
 class VerifyComponent extends Component {
@@ -41,21 +45,38 @@ class VerifyComponent extends Component {
 	render() {
 		return(
 			<div>
-				<h1>Verify Certificates</h1>
-			    <form onSubmit={this.handleSubmit.bind(this)}>
-			    	<label>User Address </label>
-			        <input type="text" name="user_address" onChange={this.handleChange.bind(this)}/>
-			        <br/>
-			        <label>Issuer Address </label>
-			        <input type="text" name="issuer_address" onChange={this.handleChange.bind(this)}/>
-			        <br/>
-			        <label>Subject </label>
-			        <input type="text" name="subject" onChange={this.handleChange.bind(this)}/>
-			        <br/>
-			        <input type='submit'/>
+				<h1 className="weight-500">Verify Certificates</h1>
+			    <form onSubmit={this.handleSubmit.bind(this)} className="formIssue floatCenter">
+			    	<Card className="padding20 margin-10">
+				        <TextField 
+				        	name="user_address" 
+				 	       	onChange={this.handleChange.bind(this)}
+				        	floatingLabelText="User Address" 
+				        	className="margin-10"
+				        />
+				        <TextField 
+				        	name="issuer_address" 
+				 	       	onChange={this.handleChange.bind(this)}
+				        	floatingLabelText="Issuer Address" 
+				        	className="margin-10"
+				        />
+				        <TextField 
+				        	name="subject" 
+				 	       	onChange={this.handleChange.bind(this)}
+				        	floatingLabelText="Certificate Title" 
+				        	className="margin-10 float-left"
+				        />
+				        <TextField 
+				        	name="description" 
+				 	       	onChange={this.handleChange.bind(this)}
+				        	floatingLabelText="Certificate Description" 
+				        	className="width-38"
+				        	multiLine={true}
+				        />
+				    </Card>
+			        <RaisedButton label="Verify" primary={true} type='submit' className="margin-10"/>
 			    </form>
 			    Verified = {String(this.state.verified)}
-			    <hr/>
 		    </div>
 		)
 	}

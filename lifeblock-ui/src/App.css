@@ -1,3 +1,6 @@
+body{
+	font-family: 'Roboto', sans-serif;
+}
 .App {
   text-align: center;
 }
@@ -26,3 +29,100 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.homeIcons{
+	width: 12vw
+}
+
+.logoIcon{
+	width: 25vw;
+	float: left;
+	margin: 10px;
+}
+
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 100px white inset;
+}
+
+.formIssue{
+	width: 50vw;
+	
+}
+
+.floatCenter{
+	margin: auto;
+}
+
+.margin10{
+	margin:10px;
+}
+
+.margin-10{
+	margin-top: 10px;
+	margin-left: 10px;
+}
+
+.margin-bottom-10{
+	margin-bottom: 10px;
+}
+
+.width-38{
+	width: 38vw !important;
+}
+
+
+.margin-bottom0{
+	margin-bottom: 0;
+}
+
+.padding-top-10{
+	padding-top: 10px;
+}
+
+.padding20{
+	padding: 20px;
+}
+
+.padding10{
+	padding: 10px;
+}
+
+.float-left{
+	float: left;
+	left:8%;
+}
+.float-right{
+	float: right;
+}
+
+.weight-500{
+	font-weight: 500;
+}
+
+#wrapper{
+    display:-webkit-flex;
+    -webkit-justify-content:center;
+
+    display:flex;
+    justify-content:center;
+
+}
+
+#wrapper div{
+    -webkit-flex:1;
+    flex:1;
+}
+
+a, a:link, a:visited, a:hover, a:active { 
+	text-decoration: none; 
+	color: black;
+}
+
+.width100{
+	width: 100%
+}
+
+.padding-top-7{
+	padding-top: 7vw;
+}
+

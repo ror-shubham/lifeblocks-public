@@ -70,25 +70,34 @@ contract Block{
         return Users[_user].certificates.length;
     }
     
-    function getCertificate(address _user, uint index) public constant returns(
-        bytes32 certi_name,
-        address issuer_key,
-        uint issuedOn,
-        bytes32[4] issuerDetails
+    function getCertificates(address _user) public constant returns(
+        bytes32[],
+        address[],
+        uint[],
+        bytes32[4][]
     ){
-        var length = getCertiCount(_user);
-        require(index<length);
-        var certificate = Users[_user].certificates[index];
-        issuerDetails=[
-        	certificate.issuer.name,
-        	certificate.issuer.url,
-        	certificate.issuer.email,
-        	certificate.issuer.telephone
-        ];
+        uint length = Users[_user].certificates.length;
+        bytes32[] memory certi_names = new bytes32[](length);
+        address[] memory issuer_keys = new address[](length);
+        uint[] memory issuedOn = new uint[](length);
+        bytes32[4][] memory issuerDetails = new bytes32[4][](length);
+
+        for (uint i = 0; i < length; i++){
+	        var certificate = Users[_user].certificates[i];
+	        certi_names[i] = certificate.certi_name;
+	        issuer_keys[i] = certificate.issuer.publickey;
+	        issuedOn[i] = certificate.issuedOn; 
+	        issuerDetails[i]=[
+	        	certificate.issuer.name,
+	        	certificate.issuer.url,
+	        	certificate.issuer.email,
+	        	certificate.issuer.telephone
+	        ];
+	    }
         return (
-        	certificate.certi_name, 
-        	certificate.issuer.publickey, 
-        	certificate.issuedOn, 
+        	certi_names, 
+        	issuer_keys, 
+        	issuedOn, 
         	issuerDetails
         );
     }
