@@ -4,11 +4,13 @@ import TextField from 'material-ui/TextField';
 import RaisedButton from 'material-ui/RaisedButton';
 import {Card} from 'material-ui/Card';
 
-var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
 var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"stateMutability":"view","type":"function"}]
 
 var BlockContractAddress = '0x2540a939ed59ddbffde373a5c5e359e2531a538c';
-var contract = new web3.eth.Contract(BlockContractABI,BlockContractAddress);
+
+var web3
+var contract
 
 class IssueComponent extends Component {
 
@@ -25,10 +27,27 @@ class IssueComponent extends Component {
 			issuer_telephone: '',
 			issuer_email: '',
 		};
-		web3.eth.getAccounts().then(r=>this.setState({thisAddress:r[0]}))
-		contract.methods.getCertiCount('0xbe84a3d5c8b712532192de4b3257453c5b0a740b')
-			.call().then((response)=>{this.setState({count:response})})
+	
 	}
+
+	componentDidMount() {
+         window.addEventListener('load', function() {
+
+         // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+         	let web3 = window.web3
+            if (typeof web3 !== 'undefined') {
+                 // Use Mist/MetaMask's provider
+                 window.web3 = new Web3(web3.currentProvider);
+                 console.log("web3 injected")
+             } else {
+                 console.log('No web3? You should consider trying MetaMask!')
+                 // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+                 window.web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"));
+         }
+         var contractObject =  web3.eth.contract(BlockContractABI)
+         contract = contractObject.at(BlockContractAddress);
+         })
+    }
 
 	handleChange = (e) => {
  		let newState = {};
@@ -39,25 +58,29 @@ class IssueComponent extends Component {
 	};
 
     handleSubmit(event) {
+    	event.preventDefault()
+    	let web3 = window.web3
+    	console.log(web3)
 		let issuerArray = [
 			web3.utils.fromUtf8(this.state.issuer_name),
 			web3.utils.fromUtf8(this.state.issuer_url),
 			web3.utils.fromUtf8(this.state.issuer_email),
 			web3.utils.fromUtf8(this.state.issuer_telephone),
 		]
-		console.log(contract.methods.issueCertificate(
+		console.log(this.state)
+		console.log(contract.issueCertificate(
 				this.state.address,
 				web3.utils.fromUtf8(this.state.subject),
 				issuerArray
 		).send({
-			from: this.state.thisAddress, 
+			
 			gas:200000
 		}).then(p=>{console.log(p)}))
     }
 
 	render() {
 		return(
-			<div margin10>
+			<div className = "margin10">
 				<h1 className="weight-500">Issue Certificates</h1>
 			    <form onSubmit={this.handleSubmit.bind(this)} className="formIssue floatCenter">
 			    	<Card className="padding20 margin-10">

@@ -14,11 +14,13 @@ import {
   TableRowColumn,
 } from 'material-ui/Table';
 
-var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"type":"function"}]
 
-var BlockContractAddress = '0xb43833ad1d38ef2af76f07eabc4441296b87676a';
-var contract = new web3.eth.Contract(BlockContractABI,BlockContractAddress);
+
+
+var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"stateMutability":"view","type":"function"}]
+var BlockContractAddress = '0x2540a939ed59ddbffde373a5c5e359e2531a538c';
+var web3
+var contract
 
 class CertificatesComponent extends Component {
 
@@ -35,6 +37,24 @@ class CertificatesComponent extends Component {
 		};
 	}
 
+	componentDidMount() {
+         window.addEventListener('load', function() {
+
+         // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+         	let web3 = window.web3
+            if (typeof web3 !== 'undefined') {
+                 // Use Mist/MetaMask's provider
+                 web3 = new Web3(web3.currentProvider);
+                 console.log("web3 injected")
+             } else {
+                 console.log('No web3? You should consider trying MetaMask!')
+                 // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+                 web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"));
+         }
+         contract = new web3.eth.Contract(BlockContractABI,BlockContractAddress);
+         })
+    }
+
 	handleChange = (e) => {
  		let newState = {};
 
@@ -47,30 +67,38 @@ class CertificatesComponent extends Component {
 		event.preventDefault();
 		console.log(contract.methods.getCertificates(
 				this.state.user_address,
-		).call().then(response=>this.setState({
-			certi_names: response[0],
-			issuer_addresses: response[1],
-			issuedOn:response[2],
-			issuerDetails:response[3]
-
-		})))
+		).call().then(response=>{
+				this.setState({
+					certi_names: response[0],
+					issuer_addresses: response[1],
+					issuedOn:response[2],
+					issuerDetails:response[3]
+				});
+				if (response[0].length==0){
+					alert("Nothing found")
+				}
+				console.log(response)
+			}
+		))
     }
 
 	render() {
+		let web3 = window.web3
 		var TableRows = []
 		_.each(this.state.certi_names, (value, index)=>{
 			var issuerDetails = [];
 			_.each(this.state.issuerDetails[index], (value, ind)=>{
-				issuerDetails.push(<TableRowColumn>{web3.utils.hexToUtf8(this.state.issuerDetails[index][ind])}</TableRowColumn>)
+				issuerDetails.push(<TableRowColumn>{web3.toAscii(this.state.issuerDetails[index][ind])}</TableRowColumn>)
 			})
 
 			var issuedOnDate = new Date(parseInt(this.state.issuedOn[index]))
 			var issuedOnString = issuedOnDate.toLocaleDateString()
 			TableRows.push(
 				<TableRow>
-					<TableRowColumn>{web3.utils.hexToUtf8(this.state.certi_names[index])}</TableRowColumn>
+					<TableRowColumn>{web3.toAscii(this.state.certi_names[index])}</TableRowColumn>
 					<TableRowColumn>{this.state.issuer_addresses[index]}</TableRowColumn>
 					<TableRowColumn>{issuedOnString}</TableRowColumn>
+					issuedOnString
 					{issuerDetails}
 				</TableRow>
 			)
