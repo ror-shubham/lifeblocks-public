@@ -6,11 +6,13 @@ import {Card} from 'material-ui/Card';
 
 
 var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"stateMutability":"view","type":"function"}]
-
 var BlockContractAddress = '0x2540a939ed59ddbffde373a5c5e359e2531a538c';
 
 var web3
 var contract
+
+var _ = require('lodash');
+
 
 class IssueComponent extends Component {
 
@@ -20,12 +22,18 @@ class IssueComponent extends Component {
 		this.state = {
 			address: '',
 			subject: '',
+			description:'',
 			count:0,
 			thisAddress:'',
 			issuer_name: '',
 			issuer_url: '',
 			issuer_telephone: '',
 			issuer_email: '',
+			valid:{
+				'address':true, 
+				'subject':true, 
+				'description': true
+			}
 		};
 	
 	}
@@ -57,6 +65,25 @@ class IssueComponent extends Component {
  		this.setState(newState);
 	};
 
+	handleChangeText = (e) => {
+		web3=window.web3
+ 		let newState = {};
+ 		newState.valid = this.state.valid
+ 		newState[e.target.name] = e.target.value;
+ 		newState['valid'][e.target.name] = (e.target.value.length!=0)
+ 		this.setState(newState);
+	};
+	handleChangeAddress = (e) => {
+		let web3 = window.web3
+ 		let newState = {};
+ 		newState.valid = this.state.valid
+ 		newState[e.target.name] = e.target.value;
+ 		newState['valid'][e.target.name] = web3.utils.isAddress(e.target.value);
+ 		this.setState(newState);
+ 		this.state.valid[e.target.name]=web3.utils.isAddress(e.target.value);
+ 		console.log(_.every(_.values(this.state.valid), function(v) {return v;}))
+	};
+
     handleSubmit(event) {
     	event.preventDefault()
     	let web3 = window.web3
@@ -67,15 +94,37 @@ class IssueComponent extends Component {
 			web3.utils.fromUtf8(this.state.issuer_email),
 			web3.utils.fromUtf8(this.state.issuer_telephone),
 		]
+
+		let address_valid = web3.utils.isAddress(this.state.address)
+		let subject_valid = this.state.subject.length!=0
+		let description_valid = this.state.description.length!=0
+
 		console.log(this.state)
-		console.log(contract.issueCertificate(
-				this.state.address,
-				web3.utils.fromUtf8(this.state.subject),
-				issuerArray
-		).send({
-			
-			gas:200000
-		}).then(p=>{console.log(p)}))
+		if (address_valid&&subject_valid&&description_valid){
+			console.log(contract.issueCertificate(
+					this.state.address,
+					web3.utils.fromUtf8(this.state.subject),
+					issuerArray
+			).send({
+				
+				gas:200000
+			},
+				 function(error, result){
+				    if(!error)
+				        console.log(result)
+				    else
+				        console.error(error);
+				}
+			).then(p=>{console.log(p)}))
+		}else{
+			this.setState({
+				valid: {
+					address:address_valid ,
+					subject: subject_valid,
+					description: description_valid
+				}
+			})
+		}
     }
 
 	render() {
@@ -87,23 +136,27 @@ class IssueComponent extends Component {
 			    	<h4 className="margin-bottom0 padding-top-10 weight-500">Certificate Details</h4>
 			    	<TextField 
 			        	name="address" 
-			 	       	onChange={this.handleChange.bind(this)}
+			 	       	onChange={this.handleChangeAddress.bind(this)}
 			        	floatingLabelText="Recipient Address" 
 			        	className="margin-10"
+			        	errorText={this.state.valid['address']?"":"Enter valid address"}
 			        />
 			        <TextField 
 			        	name="subject" 
-			 	       	onChange={this.handleChange.bind(this)}
+			 	       	onChange={this.handleChangeText.bind(this)}
 			        	floatingLabelText="Certificate Title" 
 			        	className="margin-10"
+			        	errorText={this.state.valid['subject']?"":"This field should not be empty"}
+				     
 			        />
 			        <TextField 
 			        	name="description" 
-			 	       	onChange={this.handleChange.bind(this)}
+			 	       	onChange={this.handleChangeText.bind(this)}
 			        	floatingLabelText="Certificate Description" 
 			        	className="width-38"
 			        	multiLine={true}
 			        	fullWidth={true}
+			       		errorText={this.state.valid['description']?"":"This field should not be empty"}
 			        />
 			        </Card>
 
