@@ -45,32 +45,34 @@ class CertificatesComponent extends Component {
          	let web3 = window.web3
             if (typeof web3 !== 'undefined') {
                  // Use Mist/MetaMask's provider
-                 web3 = new Web3(web3.currentProvider);
+                 window.web3 = new Web3(web3.currentProvider);
                  console.log("web3 injected")
              } else {
                  console.log('No web3? You should consider trying MetaMask!')
                  // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-                 web3 = new Web3(new Web3.providers.HttpProvider(
+                 window.web3 = new Web3(new Web3.providers.HttpProvider(
                  	"https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"
                  ));
          }
-         contract = new web3.eth.Contract(BlockContractABI,BlockContractAddress);
+         contract = new window.web3.eth.Contract(BlockContractABI,BlockContractAddress);
          })
     }
 
 	handleChange = (e) => {
 		let web3 = window.web3
+		console.log(web3.version)
  		let newState = {};
 
  		newState[e.target.name] = e.target.value;
- 		newState['valid'] = web3.isAddress(e.target.value);
+ 		newState['valid'] = web3.utils.isAddress(e.target.value);
  		this.setState(newState);
 	};
 
     handleSubmit(event) {
 		event.preventDefault();
 		let web3 = window.web3
-		let user_address_valid = web3.isAddress(this.state.user_address)
+		console.log(web3.version)
+		let user_address_valid = web3.utils.isAddress(this.state.user_address)
 		
 		if (user_address_valid){
 			console.log(contract.methods.getCertificates(
@@ -103,7 +105,7 @@ class CertificatesComponent extends Component {
 			_.each(this.state.issuerDetails[index], (value, ind)=>{
 				issuerDetails.push(
 					<TableRowColumn>
-						{web3.toAscii(this.state.issuerDetails[index][ind])}
+						{web3.utils.toAscii(this.state.issuerDetails[index][ind])}
 					</TableRowColumn>
 				)
 			})
@@ -113,7 +115,7 @@ class CertificatesComponent extends Component {
 			TableRows.push(
 				<TableRow>
 					<TableRowColumn>
-						{web3.toAscii(this.state.certi_names[index])}
+						{web3.utils.toAscii(this.state.certi_names[index])}
 					</TableRowColumn>
 					<TableRowColumn>{this.state.issuer_addresses[index]}</TableRowColumn>
 					<TableRowColumn>{issuedOnString}</TableRowColumn>

@@ -36,27 +36,28 @@ class VerifyComponent extends Component {
 	}
 
 	componentDidMount() {
-         window.addEventListener('load', function() {
+     	window.addEventListener('load', function() {
 
-         // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-         	let web3 = window.web3
-            if (typeof web3 !== 'undefined') {
-                 // Use Mist/MetaMask's provider
-                 web3 = new Web3(web3.currentProvider);
-                 console.log("web3 injected")
-             } else {
-                 console.log('No web3? You should consider trying MetaMask!')
-                 // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-                 web3 = new Web3(new Web3.providers.HttpProvider(
-                 	"https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"
-                 ));
-         }
-         contract = new web3.eth.Contract(BlockContractABI,BlockContractAddress);
+     	// Checking if Web3 has been injected by the browser (Mist/MetaMask)
+     	let web3 = window.web3
+        if (typeof web3 !== 'undefined') {
+             // Use Mist/MetaMask's provider
+             window.web3 = new Web3(web3.currentProvider);
+             console.log("web3 injected")
+         } else {
+             console.log('No web3? You should consider trying MetaMask!')
+             // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+             window.web3 = new Web3(new Web3.providers.HttpProvider(
+             	"https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"
+             ));
+     	}
+         contract = new window.web3.eth.Contract(BlockContractABI,BlockContractAddress);
          })
     }
 
 	handleChangeText = (e) => {
-		web3=window.web3
+		let web3=window.web3
+		console.log(window.web3.version)
  		let newState = {};
  		newState.valid = this.state.valid
  		newState[e.target.name] = e.target.value;
@@ -68,25 +69,26 @@ class VerifyComponent extends Component {
  		let newState = {};
  		newState.valid = this.state.valid
  		newState[e.target.name] = e.target.value;
- 		newState['valid'][e.target.name] = web3.isAddress(e.target.value);
+ 		newState['valid'][e.target.name] = web3.utils.isAddress(e.target.value);
  		this.setState(newState);
- 		this.state.valid[e.target.name]=web3.isAddress(e.target.value);
+ 		this.state.valid[e.target.name]=web3.utils.isAddress(e.target.value);
  		console.log(_.every(_.values(this.state.valid), function(v) {return v;}))
 	};
 
     handleSubmit(event) {
 		event.preventDefault();
 		let web3 = window.web3
+		console.log(web3.version)
 
-		let user_address_valid = web3.isAddress(this.state.user_address)
-		let issuer_address_valid = web3.isAddress(this.state.issuer_address)
+		let user_address_valid = web3.utils.isAddress(this.state.user_address)
+		let issuer_address_valid = web3.utils.isAddress(this.state.issuer_address)
 		let subject_valid = this.state.subject.length!=0
 		let description_valid = this.state.description.length!=0
 		if (user_address_valid&&issuer_address_valid&&subject_valid&&description_valid){
 			console.log(contract.methods.Verify(
 					this.state.user_address,
 					this.state.issuer_address,
-					web3.fromAscii(this.state.subject)
+					web3.utils.fromAscii(this.state.subject)
 			).call().then(response=>{
 				this.setState({verified:response});
 				alert("verified = "+response)

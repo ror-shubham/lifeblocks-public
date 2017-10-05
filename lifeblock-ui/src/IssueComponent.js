@@ -52,8 +52,7 @@ class IssueComponent extends Component {
                  // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
                  window.web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"));
          }
-         var contractObject =  web3.eth.contract(BlockContractABI)
-         contract = contractObject.at(BlockContractAddress);
+         contract = new window.web3.eth.Contract(BlockContractABI,BlockContractAddress);
          })
     }
 
@@ -67,6 +66,7 @@ class IssueComponent extends Component {
 
 	handleChangeText = (e) => {
 		web3=window.web3
+		console.log(web3.version)
  		let newState = {};
  		newState.valid = this.state.valid
  		newState[e.target.name] = e.target.value;
