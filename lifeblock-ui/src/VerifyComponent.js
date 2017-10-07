@@ -8,9 +8,9 @@ var _ = require('lodash');
 
 
 
-var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"_description","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"},{"name":"_description","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"stateMutability":"view","type":"function"}]
+var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"_description","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"},{"name":"_description","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"stateMutability":"view","type":"function"}]
 
-var BlockContractAddress = '0xac9ccf8f3cdef1a49d6c2ccf2508e38e2d45c8eb';
+var BlockContractAddress = '0x3bf1ca6f8fb6fd39f5f65a28e76d67ba87523f41';
 var contract
 var web3
 
@@ -91,7 +91,20 @@ class VerifyComponent extends Component {
 					web3.utils.fromAscii(this.state.subject),
 					web3.utils.fromAscii(this.state.description)
 			).call().then(response=>{
-				this.setState({verified:response});
+				this.setState({
+					verified:response,
+					issuer_address: '',
+					user_address: '',
+					subject: '',
+					description:'',
+					valid:{
+						'issuer_address':true, 
+						'user_address':true, 
+						'subject':true, 
+						'description': true
+					}
+				});
+
 				alert("verified = "+response)
 			}))
 		}
@@ -120,6 +133,7 @@ class VerifyComponent extends Component {
 				 	       	onChange={this.handleChangeAddress.bind(this)}
 				        	floatingLabelText="User Address" 
 				        	className="margin-10"
+				        	value={this.state.user_address}
 				        	errorText={this.state.valid['user_address']?"":"Enter valid address"}
 				        />
 				        <TextField 
@@ -127,6 +141,7 @@ class VerifyComponent extends Component {
 				 	       	onChange={this.handleChangeAddress.bind(this)}
 				        	floatingLabelText="Issuer Address" 
 				        	className="margin-10"
+				        	value={this.state.issuer_address}
 				        	errorText={this.state.valid['issuer_address']?"":"Enter valid address"}
 				        />
 				        <TextField 
@@ -134,6 +149,7 @@ class VerifyComponent extends Component {
 				 	       	onChange={this.handleChangeText.bind(this)}
 				        	floatingLabelText="Certificate Title" 
 				        	className="margin-10 float-left"
+				        	value={this.state.subject}
 				        	errorText={this.state.valid['subject']?"":"This field should not be empty"}
 				        />
 				        <TextField 
@@ -142,6 +158,7 @@ class VerifyComponent extends Component {
 				        	floatingLabelText="Certificate Description" 
 				        	className="width-38"
 				        	multiLine={true}
+				        	value={this.state.description}
 				        	errorText={this.state.valid['description']?"":"This field should not be empty"}
 				        />
 				    </Card>

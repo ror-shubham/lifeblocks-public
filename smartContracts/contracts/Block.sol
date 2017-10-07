@@ -76,12 +76,14 @@ contract Block{
     
     function getCertificates(address _user) public constant returns(
         bytes32[],
+        bytes32[],
         address[],
         uint[],
         bytes32[4][]
     ){
         uint length = Users[_user].certificates.length;
         bytes32[] memory certi_names = new bytes32[](length);
+        bytes32[] memory descriptions = new bytes32[](length);
         address[] memory issuer_keys = new address[](length);
         uint[] memory issuedOn = new uint[](length);
         bytes32[4][] memory issuerDetails = new bytes32[4][](length);
@@ -89,6 +91,7 @@ contract Block{
         for (uint i = 0; i < length; i++){
 	        var certificate = Users[_user].certificates[i];
 	        certi_names[i] = certificate.certi_name;
+	        descriptions[i] = certificate.description;
 	        issuer_keys[i] = certificate.issuer.publickey;
 	        issuedOn[i] = certificate.issuedOn; 
 	        issuerDetails[i]=[
@@ -99,7 +102,8 @@ contract Block{
 	        ];
 	    }
         return (
-        	certi_names, 
+        	certi_names,
+        	descriptions, 
         	issuer_keys, 
         	issuedOn, 
         	issuerDetails

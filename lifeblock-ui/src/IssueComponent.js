@@ -5,9 +5,9 @@ import RaisedButton from 'material-ui/RaisedButton';
 import {Card} from 'material-ui/Card';
 
 
-var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"_description","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"},{"name":"_description","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"stateMutability":"view","type":"function"}]
+var BlockContractABI = [{"constant":true,"inputs":[],"name":"bal","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertiCount","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_recipient","type":"address"},{"name":"_certi_name","type":"bytes32"},{"name":"_description","type":"bytes32"},{"name":"issuer_details","type":"bytes32[]"}],"name":"issueCertificate","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"},{"name":"_issuer","type":"address"},{"name":"_certName","type":"bytes32"},{"name":"_description","type":"bytes32"}],"name":"Verify","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_user","type":"address"}],"name":"getCertificates","outputs":[{"name":"","type":"bytes32[]"},{"name":"","type":"bytes32[]"},{"name":"","type":"address[]"},{"name":"","type":"uint256[]"},{"name":"","type":"bytes32[4][]"}],"payable":false,"stateMutability":"view","type":"function"}]
 
-var BlockContractAddress = '0xac9ccf8f3cdef1a49d6c2ccf2508e38e2d45c8eb';
+var BlockContractAddress = '0x3bf1ca6f8fb6fd39f5f65a28e76d67ba87523f41';
 
 var web3
 var contract
@@ -40,21 +40,35 @@ class IssueComponent extends Component {
 	}
 
 	componentDidMount() {
-         window.addEventListener('load', function() {
+		window.addEventListener('load', function() {
 
          // Checking if Web3 has been injected by the browser (Mist/MetaMask)
          	let web3 = window.web3
             if (typeof web3 !== 'undefined') {
-                 // Use Mist/MetaMask's provider
-                 window.web3 = new Web3(web3.currentProvider);
-                 console.log("web3 injected")
-             } else {
-                 console.log('No web3? You should consider trying MetaMask!')
-                 // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-                 window.web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"));
-         }
-         contract = new window.web3.eth.Contract(BlockContractABI,BlockContractAddress);
-         })
+                // Use Mist/MetaMask's provider
+                window.web3 = new Web3(web3.currentProvider);
+                console.log("web3 injected")
+            } else {
+                console.log('No web3? You should consider trying MetaMask!')
+                // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+                window.web3 = new Web3(new Web3.providers.HttpProvider(
+                	"https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"
+                ));
+        	}
+        	contract = new window.web3.eth.Contract(BlockContractABI,BlockContractAddress);
+        	let defaultAccount = window.web3.eth.defaultAccount
+
+        })
+        console.log(window.web3.eth)
+         console.log(window.web3.eth.defaultAccount)
+        window.onload =() => {
+        	console.log(window.web3.eth.getAccounts().then( result=>
+        		this.setState({'thisAddress':result[0]})
+        	))
+        	
+        }
+        	
+         
     }
 
 	handleChange = (e) => {
@@ -100,24 +114,35 @@ class IssueComponent extends Component {
 		let subject_valid = this.state.subject.length!=0
 		let description_valid = this.state.description.length!=0
 
-		console.log(this.state)
+		console.log(this.state.thisAddress)
+
 		if (address_valid&&subject_valid&&description_valid){
-			console.log(contract.issueCertificate(
+			console.log(contract.methods.issueCertificate(
 					this.state.address,
 					web3.utils.fromUtf8(this.state.subject),
 					web3.utils.fromUtf8(this.state.description),
 					issuerArray
 			).send({
-				
-				gas:200000
-			},
-				 function(error, result){
-				    if(!error)
-				        console.log(result)
-				    else
-				        console.error(error);
-				}
-			).then(p=>{console.log(p)}))
+				from: this.state.thisAddress,
+				gas: 4818772
+			}).then(result=>{
+				this.setState ({
+					address: '',
+					subject: '',
+					description:'',
+					count:0,
+					issuer_name: '',
+					issuer_url: '',
+					issuer_telephone: '',
+					issuer_email: '',
+					valid:{
+						'address':true, 
+						'subject':true, 
+						'description': true
+					}
+				});
+				console.log(result)
+			}))
 		}else{
 			this.setState({
 				valid: {
@@ -141,6 +166,7 @@ class IssueComponent extends Component {
 			 	       	onChange={this.handleChangeAddress.bind(this)}
 			        	floatingLabelText="Recipient Address" 
 			        	className="margin-10"
+			        	value={this.state.address}
 			        	errorText={this.state.valid['address']?"":"Enter valid address"}
 			        />
 			        <TextField 
@@ -148,6 +174,7 @@ class IssueComponent extends Component {
 			 	       	onChange={this.handleChangeText.bind(this)}
 			        	floatingLabelText="Certificate Title" 
 			        	className="margin-10"
+			        	value={this.state.subject}
 			        	errorText={this.state.valid['subject']?"":"This field should not be empty"}
 				     
 			        />
@@ -158,6 +185,7 @@ class IssueComponent extends Component {
 			        	className="width-38"
 			        	multiLine={true}
 			        	fullWidth={true}
+			        	value={this.state.description}
 			       		errorText={this.state.valid['description']?"":"This field should not be empty"}
 			        />
 			        </Card>
@@ -169,6 +197,7 @@ class IssueComponent extends Component {
 			 	       	onChange={this.handleChange.bind(this)}
 			        	floatingLabelText="Name" 
 			        	className="margin-10"
+			        	value={this.state.issuer_name}
 			        />
 
 			        <TextField 
@@ -176,6 +205,7 @@ class IssueComponent extends Component {
 			 	       	onChange={this.handleChange.bind(this)}
 			        	floatingLabelText="URL" 
 			        	className="margin-10"
+			        	value={this.state.issuer_url}
 			        />
 
 			        <TextField 
@@ -183,6 +213,7 @@ class IssueComponent extends Component {
 			 	       	onChange={this.handleChange.bind(this)}
 			        	floatingLabelText="Email" 
 			        	className="margin-10"
+			        	value={this.state.issuer_email}
 			        />
 
 			        <TextField 
@@ -190,6 +221,7 @@ class IssueComponent extends Component {
 			 	       	onChange={this.handleChange.bind(this)}
 			        	floatingLabelText="Telephone" 
 			        	className="margin-10"
+			        	value={this.state.issuer_telephone}
 			        />
 			        </Card>
 			        <RaisedButton label="Issue" primary={true} type='submit' className="margin10"/>
