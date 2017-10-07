@@ -30,13 +30,15 @@ contract Block{
     function Verify(
     	address _user, 
     	address _issuer, 
-    	bytes32 _certName
+    	bytes32 _certName,
+    	bytes32 _description
     ) public constant returns (bool success){
         var certificates = Users[_user].certificates;
         for (uint i=0; i<certificates.length; i++){
             if (
             	(certificates[i].issuer.publickey==_issuer) && 
-            	(sha3(certificates[i].certi_name) == sha3(_certName))
+            	(sha3(certificates[i].certi_name) == sha3(_certName)) &&
+            	(sha3(certificates[i].description) == sha3(_description))
             ){
                 return true;
             }
@@ -47,6 +49,7 @@ contract Block{
     function issueCertificate(
     	address _recipient, 
     	bytes32 _certi_name, 
+    	bytes32 _description,
     	bytes32[] issuer_details
     ) public returns (bool){ 
         User storage u = Users[_recipient];
@@ -59,6 +62,7 @@ contract Block{
         certificate.issuer.telephone = issuer_details[2];
 
         certificate.certi_name = _certi_name;
+        certificate.description = _description;
 
         certificate.issuedOn = now;
         var p = u.certificates;
