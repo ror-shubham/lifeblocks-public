@@ -30,10 +30,11 @@ class CertificatesComponent extends Component {
 		// Include name of user here too
 		this.state = {
 			user_address: '',
+			valid: true,
 			certi_names:[],
 			issuer_addresses:[],
 			issuedOn:[],
-			issuerDetails: []
+			issuerDetails: [],
 		};
 	}
 
@@ -49,37 +50,49 @@ class CertificatesComponent extends Component {
              } else {
                  console.log('No web3? You should consider trying MetaMask!')
                  // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-                 web3 = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"));
+                 web3 = new Web3(new Web3.providers.HttpProvider(
+                 	"https://rinkeby.infura.io/I5HrJaXPv6hlCajZDJVD"
+                 ));
          }
          contract = new web3.eth.Contract(BlockContractABI,BlockContractAddress);
          })
     }
 
 	handleChange = (e) => {
+		let web3 = window.web3
  		let newState = {};
 
  		newState[e.target.name] = e.target.value;
-
+ 		newState['valid'] = web3.isAddress(e.target.value);
  		this.setState(newState);
 	};
 
     handleSubmit(event) {
 		event.preventDefault();
-		console.log(contract.methods.getCertificates(
-				this.state.user_address,
-		).call().then(response=>{
-				this.setState({
-					certi_names: response[0],
-					issuer_addresses: response[1],
-					issuedOn:response[2],
-					issuerDetails:response[3]
-				});
-				if (response[0].length==0){
-					alert("Nothing found")
+		let web3 = window.web3
+		let user_address_valid = web3.isAddress(this.state.user_address)
+		
+		if (user_address_valid){
+			console.log(contract.methods.getCertificates(
+					this.state.user_address,
+			).call().then(response=>{
+					this.setState({
+						certi_names: response[0],
+						issuer_addresses: response[1],
+						issuedOn:response[2],
+						issuerDetails:response[3]
+					});
+					if (response[0].length==0){
+						alert("Nothing found")
+					}
+					console.log(response)
 				}
-				console.log(response)
-			}
-		))
+			))
+		}else{
+			this.setState({
+				valid:user_address_valid
+			})
+		}
     }
 
 	render() {
@@ -88,14 +101,20 @@ class CertificatesComponent extends Component {
 		_.each(this.state.certi_names, (value, index)=>{
 			var issuerDetails = [];
 			_.each(this.state.issuerDetails[index], (value, ind)=>{
-				issuerDetails.push(<TableRowColumn>{web3.toAscii(this.state.issuerDetails[index][ind])}</TableRowColumn>)
+				issuerDetails.push(
+					<TableRowColumn>
+						{web3.toAscii(this.state.issuerDetails[index][ind])}
+					</TableRowColumn>
+				)
 			})
 
 			var issuedOnDate = new Date(parseInt(this.state.issuedOn[index]))
 			var issuedOnString = issuedOnDate.toLocaleDateString()
 			TableRows.push(
 				<TableRow>
-					<TableRowColumn>{web3.toAscii(this.state.certi_names[index])}</TableRowColumn>
+					<TableRowColumn>
+						{web3.toAscii(this.state.certi_names[index])}
+					</TableRowColumn>
 					<TableRowColumn>{this.state.issuer_addresses[index]}</TableRowColumn>
 					<TableRowColumn>{issuedOnString}</TableRowColumn>
 					issuedOnString
@@ -108,15 +127,23 @@ class CertificatesComponent extends Component {
 			<div>
 				<h1 className="weight-500">View Your Certificates</h1>
 				
-			    <form onSubmit={this.handleSubmit.bind(this)} className="formIssue floatCenter margin-bottom-10">
+			    <form 
+			    	onSubmit={this.handleSubmit.bind(this)} 
+			    	className="formIssue floatCenter margin-bottom-10"
+			    >
 				    <Paper className= "padding10">    
 				        <TextField 
 				        	name="user_address" 
 				 	       	onChange={this.handleChange.bind(this)}
 				        	floatingLabelText="Enter User Address" 
+				        	errorText={this.state.valid?"":"Enter valid address"}
 				        />
 				        <br/>
-				        <RaisedButton label="Get" primary={true} type='submit' />      
+				        <RaisedButton 
+				        	label="Get" 
+				        	primary={true} 
+				        	type='submit' 
+				        />      
 				    </Paper>  
 			    </form>
 				

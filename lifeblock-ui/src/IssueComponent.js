@@ -75,7 +75,14 @@ class IssueComponent extends Component {
 		).send({
 			
 			gas:200000
-		}).then(p=>{console.log(p)}))
+		},
+			 function(error, result){
+			    if(!error)
+			        console.log(result)
+			    else
+			        console.error(error);
+			}
+		).then(p=>{console.log(p)}))
     }
 
 	render() {
