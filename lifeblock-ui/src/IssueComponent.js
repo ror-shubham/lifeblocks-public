@@ -59,8 +59,6 @@ class IssueComponent extends Component {
         	let defaultAccount = window.web3.eth.defaultAccount
 
         })
-        console.log(window.web3.eth)
-         console.log(window.web3.eth.defaultAccount)
         window.onload =() => {
         	console.log(window.web3.eth.getAccounts().then( result=>
         		this.setState({'thisAddress':result[0]})
