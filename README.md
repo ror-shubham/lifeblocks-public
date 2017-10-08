@@ -4,7 +4,7 @@ Digital Blockchain Certificate platform
 ## Getting Started
 ### Run WebApp
 1. Add metamask extension to your browser- https://metamask.io/
-2. Create an account and Switch to Rinkeby Test Net
+2. Create an account and Switch to Rinkeby Test Net, add some ethers to test account from https://faucet.rinkeby.io/ (its free for test net)
 3. Clone the repo.
 4. Install npm- https://www.npmjs.com/get-npm
 6. Go to directory `lifeblock-ui` and install dependancies by running ```npm install```
