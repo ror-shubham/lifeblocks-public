@@ -1,7 +1,7 @@
 # lifeblocks
 Trustless Certification Verification using the Ethereum Protocol. You can find more about it at https://devpost.com/software/lifeblocks-g3siwl
 
-## Getting Started
+## Testing
 ### Run WebApp
 1. Add metamask extension to your browser- https://metamask.io/
 2. Create an account and Switch to Rinkeby Test Net, add some ethers to test account from https://faucet.rinkeby.io/ (its free for test net)
