@@ -1,5 +1,5 @@
 # lifeblocks
-Digital Blockchain Certificate platform
+Trustless Certification Verification using the Ethereum Protocol. You can find more about it at https://devpost.com/software/lifeblocks-g3siwl
 
 ## Getting Started
 ### Run WebApp
